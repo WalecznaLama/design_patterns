@@ -55,6 +55,8 @@ int main() {
     Component* decorator2 = new ConcreteDecoratorB(decorator1);
     client_code(decorator2);  // Zwraca: RESULT: ConcreteDecoratorB(ConcreteDecoratorA(ConcreteComponent))
 
+    delete simple;
+    delete decorator1;
     delete decorator2;
 
     return 0;
