@@ -1,63 +1,63 @@
 #include <iostream>
 #include <string>
 
-class Component {
+class Text {
 public:
-    virtual ~Component() {}
-    virtual std::string operation() const = 0;
+    virtual ~Text() {}
+    virtual std::string getText() = 0;  // Pure virtual function
 };
 
-class ConcreteComponent : public Component {
+class PlainText : public Text {
 public:
-    std::string operation() const override {
-        return "ConcreteComponent";
+    PlainText(std::string text) : text(text) {}
+    std::string getText() override {
+        return text;
     }
+private:
+    std::string text;
 };
 
-class Decorator : public Component {
+class TextDecorator : public Text {
+public:
+    TextDecorator(Text* text) : text(new PlainText(text->getText())) {}
+    ~TextDecorator() { delete text; }
 protected:
-    Component* component;
+    Text* text;
+};
 
+class BoldText : public TextDecorator {
 public:
-    Decorator(Component* c) : component(c) {}
-    virtual ~Decorator() {}
-
-    std::string operation() const override {
-        return this->component->operation();
+    BoldText(Text* text) : TextDecorator(text) {}
+    std::string getText() override {
+        return "<b>" + text->getText() + "</b>";
     }
 };
 
-class ConcreteDecoratorA : public Decorator {
+class ItalicText : public TextDecorator {
 public:
-    ConcreteDecoratorA(Component* c) : Decorator(c) {}
-
-    std::string operation() const override {
-        return "ConcreteDecoratorA(" + Decorator::operation() + ")";
+    ItalicText(Text* text) : TextDecorator(text) {}
+    std::string getText() override {
+        return "<i>" + text->getText() + "</i>";
     }
 };
-
-class ConcreteDecoratorB : public Decorator {
-public:
-    ConcreteDecoratorB(Component* c) : Decorator(c) {}
-
-    std::string operation() const override {
-        return "ConcreteDecoratorB(" + Decorator::operation() + ")";
-    }
-};
-
-void client_code(Component* component) {
-    std::cout << "RESULT: " << component->operation();
-}
 
 int main() {
-    Component* simple = new ConcreteComponent;
-    Component* decorator1 = new ConcreteDecoratorA(simple);
-    Component* decorator2 = new ConcreteDecoratorB(decorator1);
-    client_code(decorator2);  // Zwraca: RESULT: ConcreteDecoratorB(ConcreteDecoratorA(ConcreteComponent))
+    Text* text = new PlainText("Hello, World!");
 
-    delete simple;
-    delete decorator1;
-    delete decorator2;
+    Text* boldText = new BoldText(new PlainText(text->getText()));
+    std::cout << boldText->getText() << std::endl;  // Prints: <b>Hello, World!</b>
+    delete boldText;
+
+    Text* italicText = new ItalicText(new PlainText(text->getText()));
+    std::cout << italicText->getText() << std::endl;  // Prints: <i>Hello, World!</i>
+    delete italicText;
+
+    Text* boldItalicText = new BoldText(new ItalicText(new PlainText(text->getText())));
+    std::cout << boldItalicText->getText() << std::endl;  // Prints: <b><i>Hello, World!</i></b>
+    delete boldItalicText;
+
+    delete text;
 
     return 0;
 }
+

@@ -1,49 +1,64 @@
 from abc import ABC, abstractmethod
+from typing import List
 
 
-# Interfejs Strategy
-class Strategy(ABC):
+class SortStrategy(ABC):
     @abstractmethod
-    def execute(self):
+    def sort(self, data: List[int]) -> List[int]:
         pass
 
 
-# ConcreteStrategyA
-class ConcreteStrategyA(Strategy):
-    def execute(self):
-        print("Wykonywanie strategii A")
+class BubbleSortStrategy(SortStrategy):
+    def sort(self, data: List[int]) -> List[int]:
+        data = data.copy()
+        n = len(data)
+        for i in range(n):
+            for j in range(0, n-i-1):
+                if data[j] > data[j+1] :
+                    data[j], data[j+1] = data[j+1], data[j]
+        return data
 
 
-# ConcreteStrategyB
-class ConcreteStrategyB(Strategy):
-    def execute(self):
-        print("Wykonywanie strategii B")
+class QuickSortStrategy(SortStrategy):
+    def sort(self, data: List[int]) -> List[int]:
+        data = data.copy()
+        self.quick_sort(data, 0, len(data) - 1)
+        return data
+
+    def partition(self, data: List[int], low: int, high: int) -> int:
+        i = low - 1
+        pivot = data[high]
+        for j in range(low, high):
+            if data[j] <= pivot:
+                i += 1
+                data[i], data[j] = data[j], data[i]
+        data[i+1], data[high] = data[high], data[i+1]
+        return i+1
+
+    def quick_sort(self, data: List[int], low: int, high: int):
+        if low < high:
+            pi = self.partition(data, low, high)
+            self.quick_sort(data, low, pi - 1)
+            self.quick_sort(data, pi + 1, high)
 
 
-# Context
-class Context:
-    def __init__(self, strategy: Strategy):
-        self._strategy = strategy
+class SortingSystem:
+    def __init__(self, strategy: SortStrategy):
+        self.strategy = strategy
 
-    @property
-    def strategy(self):
-        return self._strategy
-
-    @strategy.setter
-    def strategy(self, strategy: Strategy):
-        self._strategy = strategy
-
-    def execute_strategy(self):
-        self._strategy.execute()
-
-
-def main():
-    context = Context(ConcreteStrategyA())
-    context.execute_strategy()  # Wykonywanie strategii A
-
-    context.strategy = ConcreteStrategyB()
-    context.execute_strategy()  # Wykonywanie strategii B
+    def sort(self, data: List[int]) -> List[int]:
+        return self.strategy.sort(data)
 
 
 if __name__ == "__main__":
-    main()
+    # Użycie
+    bubble_sort_strategy = BubbleSortStrategy()
+    quick_sort_strategy = QuickSortStrategy()
+
+    data = [64, 34, 25, 12, 22, 11, 90]
+
+    system = SortingSystem(bubble_sort_strategy)
+    print(system.sort(data))  # Sortuje danymi używając strategii Bubble Sort
+
+    system = SortingSystem(quick_sort_strategy)
+    print(system.sort(data))  # Sortuje danymi używając strategii Quick Sort

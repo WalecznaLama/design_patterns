@@ -1,54 +1,52 @@
 #include <iostream>
-#include <list>
+#include <vector>
+#include <algorithm>
 
-// Interfejs dla obserwatorów
 class Observer {
 public:
     virtual ~Observer() {}
-    virtual void update(int value) = 0;
+    virtual void update(const std::string& message) = 0;  // Pure virtual function
 };
 
-// Klasa Obserwowanego (Subject)
-class Subject {
-private:
-    std::list<Observer*> observers;
-    int state;
-
+class User : public Observer {
 public:
-    void attach(Observer* observer) {
-        observers.push_back(observer);
+    User(std::string name) : name(name) {}
+    void update(const std::string& message) override {
+        std::cout << name << " received message: " << message << std::endl;
+    }
+private:
+    std::string name;
+};
+
+class NotificationChannel {
+public:
+    void subscribe(Observer* observer) {
+        subscribers.push_back(observer);
     }
 
-    void set_state(int value) {
-        state = value;
-        notify();
+    void unsubscribe(Observer* observer) {
+        subscribers.erase(std::remove(subscribers.begin(), subscribers.end(), observer), subscribers.end());
     }
 
-    void notify() {
-        for (auto observer : observers) {
-            observer->update(state);
+    void notify(const std::string& message) {
+        for (Observer* subscriber : subscribers) {
+            subscriber->update(message);
         }
     }
-};
-
-// Konkretny obserwator
-class ConcreteObserver : public Observer {
 private:
-    int observerState;
-
-public:
-    void update(int value) override {
-        observerState = value;
-        std::cout << "Stan obserwatora zaktualizowany na: " << observerState << "\n";
-    }
+    std::vector<Observer*> subscribers;
 };
 
 int main() {
-    Subject subject;
-    ConcreteObserver observer;
+    NotificationChannel channel;
 
-    subject.attach(&observer);
-    subject.set_state(5); // "Stan obserwatora zaktualizowany na: 5" zostanie wydrukowany na konsoli
+    User alice("Alice");
+    User bob("Bob");
+
+    channel.subscribe(&alice);
+    channel.subscribe(&bob);
+
+    channel.notify("Hello, World!");  // Alice and Bob receive notification
 
     return 0;
 }

@@ -1,41 +1,40 @@
-class Observer:
-    def update(self, value):
+from abc import ABC, abstractmethod
+
+class Observer(ABC):
+    @abstractmethod
+    def update(self, message: str):
         pass
 
+class User(Observer):
+    def __init__(self, name):
+        self.name = name
 
-class Subject:
+    def update(self, message: str):
+        print(f'{self.name} received message: {message}')
+
+class NotificationChannel:
     def __init__(self):
-        self._observers = []
-        self._state = None
+        self.subscribers = []
 
-    def attach(self, observer):
-        self._observers.append(observer)
+    def subscribe(self, subscriber: Observer):
+        self.subscribers.append(subscriber)
 
-    def set_state(self, value):
-        self._state = value
-        self.notify()
+    def unsubscribe(self, subscriber: Observer):
+        self.subscribers.remove(subscriber)
 
-    def notify(self):
-        for observer in self._observers:
-            observer.update(self._state)
-
-
-class ConcreteObserver(Observer):
-    def __init__(self):
-        self._observer_state = None
-
-    def update(self, value):
-        self._observer_state = value
-        print(f"Stan obserwatora zaktualizowany na: {self._observer_state}")
-
-
-def main():
-    subject = Subject()
-    observer = ConcreteObserver()
-
-    subject.attach(observer)
-    subject.set_state(5)  # "Stan obserwatora zaktualizowany na: 5" zostanie wydrukowane na konsoli
+    def notify(self, message: str):
+        for subscriber in self.subscribers:
+            subscriber.update(message)
 
 
 if __name__ == "__main__":
-    main()
+    # Użycie
+    channel = NotificationChannel()
+
+    alice = User('Alice')
+    bob = User('Bob')
+
+    channel.subscribe(alice)
+    channel.subscribe(bob)
+
+    channel.notify('Hello, World!')  # Alice and Bob receive notification
